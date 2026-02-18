@@ -61,3 +61,7 @@ cat qgis.sources > /etc/apt/sources.list.d/qgis.sources
 
 apt update
 apt install qgis qgis-plugin-grass
+
+git config --global init.defaultBranch master
+
+cat .gitconfig > ~/.gitconfig
