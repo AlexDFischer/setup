@@ -63,5 +63,5 @@ apt update
 apt install qgis qgis-plugin-grass
 
 git config --global init.defaultBranch master
-
-cat .gitconfig > ~/.gitconfig
+git config --global user.name "Alex Fischer"
+git config --global user.email alexander.fischer3@gmail.com
