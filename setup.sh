@@ -1,7 +1,11 @@
+## TODO
+# file explorer default folders
+# desktop bottom bar pinned programs
+
 apt install curl trash-cli qgis git python-is-python3 pip python3-full virtualenv \
     libssl-dev openssl libffi-dev bzip2-devel libncurses5-dev libncursesw5-dev libreadline-dev \
     libsqlite3-dev tk-dev python3-tk liblzma-dev \
-    gimp therion survex keyd \
+    gimp therion survex keyd chromium \
     libgdal-dev cmake
 
 cat user-dirs.dirs > ~/.config/user-dirs.dirs
@@ -28,6 +32,7 @@ pyenv install 3.10.19
 pyenv virtualenv 3.10.19 sinkholes
 pyenv activate sinkholes
 pip install -r requirements.txt
+deactivate
 
 # keyd key mappings
 cat keyd_default.conf | tee /etc/keyd/default.conf > /dev/null
@@ -65,3 +70,8 @@ apt install qgis qgis-plugin-grass
 git config --global init.defaultBranch master
 git config --global user.name "Alex Fischer"
 git config --global user.email alexander.fischer3@gmail.com
+
+# Spotify
+curl -sS https://download.spotify.com/debian/pubkey_5384CE82BA52C83A.asc | sudo gpg --dearmor --yes -o /etc/apt/trusted.gpg.d/spotify.gpg
+echo "deb https://repository.spotify.com stable non-free" | sudo tee /etc/apt/sources.list.d/spotify.list
+sudo apt update && sudo apt install spotify-client
