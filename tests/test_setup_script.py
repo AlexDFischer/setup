@@ -58,6 +58,38 @@ touch "$2/later"
             self.assertFalse(target.exists())
             self.assertFalse((Path(tmp) / 'later').exists())
 
+    def test_anaconda_installer_filename_and_cleanup(self):
+        # Exercise the actual user script without downloading/installing Anaconda.
+        block = SCRIPT.read_text().split('    if has anaconda; then', 1)[1]
+        block = block.split("<<'USER_SCRIPT'\n", 1)[1].split('\nUSER_SCRIPT', 1)[0]
+        with tempfile.TemporaryDirectory(prefix='anaconda user ') as tmp:
+            root = Path(tmp)
+            fake = root / 'installer.sh'
+            fake.write_text('''#!/bin/bash
+case "$0" in *.sh) ;; *) exit 42 ;; esac
+[[ $1 == -b && $2 == -p && $3 == "$HOME/anaconda3" ]] || exit 43
+mkdir -p "$3/bin"
+printf '#!/bin/bash\\nprintf "%%s\\n" "$*" > "$HOME/conda-args"\\n' > "$3/bin/conda"
+chmod +x "$3/bin/conda"
+''')
+            prelude = r'''
+curl() {
+    cp "$HOME/installer.sh" "${@: -1}"
+    printf '%s' "${@: -1}" > "$HOME/download-path"
+}
+sha256sum() { cat >/dev/null; return "${CHECKSUM_STATUS:-0}"; }
+'''
+            env = dict(os.environ, HOME=tmp)
+            result = subprocess.run(['bash', '-seu'], input=prelude + block,
+                                    env=dict(env, CHECKSUM_STATUS='1'), text=True, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertFalse((root / 'anaconda3').exists())
+            self.assertFalse(Path((root / 'download-path').read_text()).exists())
+            subprocess.run(['bash', '-seu'], input=prelude + block,
+                           env=env, text=True, capture_output=True, check=True)
+            self.assertEqual((root / 'conda-args').read_text(), 'init bash\n')
+            self.assertFalse(Path((root / 'download-path').read_text()).exists())
+
     def test_panel_receives_selected_apps_and_retries_failure(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

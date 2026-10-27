@@ -311,7 +311,8 @@ if [[ ! -x $HOME/anaconda3/bin/conda ]]; then
         echo 'An incomplete ~/anaconda3 exists; inspect it before reinstalling.' >&2
         exit 1
     fi
-    installer=$(mktemp)
+    # Constructor installers require a .sh filename even when invoked with bash.
+    installer=$(mktemp /tmp/anaconda-installer.XXXXXXXX.sh)
     trap 'rm -f -- "$installer"' EXIT
     curl -fSL --retry 3 https://repo.anaconda.com/archive/Anaconda3-2025.12-2-Linux-x86_64.sh -o "$installer"
     # SHA256 from https://repo.anaconda.com/archive/ (pinned installer version).
