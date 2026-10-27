@@ -37,8 +37,11 @@ def keys(shortcut):
     sequences = []
     if shortcut:
         sequence = QKeySequence(shortcut)
+        # KDE's QKeySequence deserializer unconditionally reads four integers.
+        # Match its serializer, including zero padding for shorter sequences.
         combinations = dbus.Array(
-            [sequence[i].toCombined() for i in range(sequence.count())], signature="i"
+            [sequence[i].toCombined() if i < sequence.count() else 0 for i in range(4)],
+            signature="i",
         )
         sequences.append(dbus.Struct((combinations,), signature="ai"))
     return dbus.Array(sequences, signature="(ai)")

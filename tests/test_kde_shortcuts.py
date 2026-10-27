@@ -30,6 +30,16 @@ class FakeAccel:
 
 
 class ShortcutTests(unittest.TestCase):
+    def test_key_sequences_match_kde_wire_format(self):
+        self.assertEqual(shortcuts.keys(None), [])
+        single = shortcuts.keys('Meta+Up')
+        self.assertEqual(single.signature, '(ai)')
+        self.assertEqual(single[0].signature, 'ai')
+        self.assertEqual(single[0][0].signature, 'i')
+        self.assertEqual(list(single[0][0]), [0x10000000 | 0x01000013, 0, 0, 0])
+        multi = shortcuts.keys('Ctrl+K, Ctrl+C')
+        self.assertEqual(list(multi[0][0]), [0x04000000 | ord('K'), 0x04000000 | ord('C'), 0, 0])
+
     def test_keys_and_conflicting_defaults(self):
         accel = FakeAccel()
         with tempfile.TemporaryDirectory() as tmp:

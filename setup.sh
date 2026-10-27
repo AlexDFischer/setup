@@ -275,7 +275,10 @@ CONFIG
         apt_install qgis qgis-plugin-grass
     fi
     if has git || has git-identity; then apt_install git; fi
-    if has git; then as_user git config --global init.defaultBranch master; fi
+    if has git; then
+        as_user git config --global init.defaultBranch master
+        as_user git config --global pull.rebase false
+    fi
     if has git-identity; then
         as_user git config --global user.name 'Alex Fischer'
         as_user git config --global user.email alexander.fischer3@gmail.com
