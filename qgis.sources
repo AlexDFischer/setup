@@ -1,4 +1,5 @@
-Types: deb deb-src
+# PORTABILITY: Debian 13 (trixie), amd64 only. Ubuntu/new Debian need their own supported suite.
+Types: deb
 URIs: https://qgis.org/debian
 Suites: trixie
 Architectures: amd64
