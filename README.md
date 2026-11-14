@@ -92,6 +92,11 @@ Shift+Space to underscore. zram uses lz4, 50% of RAM on demand, and swap priorit
 effect on reboot if the service is already active; setup does not swap off a
 busy device.
 
+The inotify component sets `fs.inotify.max_user_instances` to 1024 immediately
+and persists it in `/etc/sysctl.d/99-inotify.conf` for subsequent boots. It is
+enabled in both profiles; use `--without-inotify` to skip it. The watch limit
+is unchanged.
+
 ## Checks
 
 These checks do not install software or alter live desktop settings:

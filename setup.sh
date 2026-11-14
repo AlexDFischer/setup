@@ -21,7 +21,7 @@ Signal/QGIS cannot be enabled with --work. Disabling a component does not uninst
   -h, --help                    Show help
 
 Components:
-  base, graphics, latex, cave, uv, oomd, zram, folders, wine, keyd,
+  base, graphics, latex, cave, uv, oomd, zram, inotify, folders, wine, keyd,
   shell-path, claude, codex, signal, qgis, git, git-identity, spotify,
   anaconda, python-packages, prince, vscode, date-locale, panel, shortcuts
 
@@ -33,7 +33,7 @@ with uv and activate automatically in new interactive Bash terminals.
 HELP
 }
 
-components=(base graphics latex cave uv oomd zram folders wine keyd shell-path
+components=(base graphics latex cave uv oomd zram inotify folders wine keyd shell-path
             claude codex signal qgis git git-identity spotify anaconda
             python-packages prince vscode date-locale panel shortcuts)
 declare -A enabled=() overrides=()
@@ -233,6 +233,14 @@ PRIORITY=100
 CONFIG
         systemctl enable --now zramswap.service
         # Do not swap off an in-use device on a rerun; new settings apply next boot.
+    fi
+    if has inotify; then
+        apt_install procps
+        write_config /etc/sysctl.d/99-inotify.conf <<'CONFIG'
+# Managed by system-setup: allow more file-monitoring instances per user.
+fs.inotify.max_user_instances = 1024
+CONFIG
+        sysctl --load=/etc/sysctl.d/99-inotify.conf
     fi
     if has folders; then as_user /usr/bin/python3 "$script_directory/setup-home.py" folders; fi
     if has wine; then
