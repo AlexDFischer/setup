@@ -242,7 +242,10 @@ fs.inotify.max_user_instances = 1024
 CONFIG
         sysctl --load=/etc/sysctl.d/99-inotify.conf
     fi
-    if has folders; then as_user /usr/bin/python3 "$script_directory/setup-home.py" folders; fi
+    if has folders; then
+        as_user /usr/bin/python3 "$script_directory/setup-home.py" folders
+        as_user /usr/bin/python3 "$script_directory/setup-home.py" places
+    fi
     if has wine; then
         # PORTABILITY: amd64+i386 multiarch Wine packages must exist in the host
         # repositories; this step does not apply to ARM or an i386-free release.

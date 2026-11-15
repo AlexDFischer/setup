@@ -59,10 +59,14 @@ available after opening a new terminal.
 ## Desktop and folders
 
 Folder setup renames Desktop, Documents, Downloads, and Pictures to lowercase.
-It refuses ambiguous source/destination collisions before moving any directories.
+If both spellings exist, the capitalized folder is merged into the lowercase one;
+it refuses (before moving anything) if any file name would be overwritten.
 Videos, Templates, Public, and Music are removed only when empty; populated
 folders remain intact. Their XDG entries point at the home directory to prevent
 recreation. Unknown user-directory entries and comments are preserved.
+The Dolphin/KDE Places sidebar shows the lowercase names, points at the lowercase folders, adds ~/src, and hides Music
+and Videos (KDE's user-places.xbel; a backup is kept). It is skipped until KDE
+has created that file on the first login.
 
 Panel setup replaces the bottom task manager's pins with Dolphin, Konsole,
 QGIS (personal and enabled), Firefox, VSCode (enabled), and Spotify (enabled).

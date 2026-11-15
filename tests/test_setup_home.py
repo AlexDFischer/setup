@@ -32,12 +32,54 @@ class HomeTests(unittest.TestCase):
             self.assertIn('XDG_MUSIC_DIR="$HOME/"', text)
             self.assertIn('# keep this comment', text)
 
+    def test_places_point_at_lowercase_folders_and_hide_removed_ones(self):
+        xbel = '''<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xbel>
+<xbel xmlns:bookmark="http://www.freedesktop.org/standards/desktop-bookmarks">
+ <bookmark href="file:///HOME"><title>Home</title><info><metadata owner="http://www.kde.org"><isSystemItem>true</isSystemItem></metadata></info></bookmark>
+ <bookmark href="file:///HOME/Desktop"><title>Desktop</title><info><metadata owner="http://www.kde.org"><isSystemItem>true</isSystemItem></metadata></info></bookmark>
+ <bookmark href="file:///HOME/Music"><title>Music</title><info><metadata owner="http://www.kde.org"><isSystemItem>true</isSystemItem></metadata></info></bookmark>
+ <bookmark href="trash:/"><title>Trash</title><info><metadata owner="http://www.kde.org"><isSystemItem>true</isSystemItem></metadata></info></bookmark>
+</xbel>
+'''
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp) / 'home'
+            home.mkdir()
+            data = Path(tmp) / 'share'
+            data.mkdir()
+            (data / 'user-places.xbel').write_text(xbel.replace('file:///HOME', home.as_uri()))
+            home_setup.places(home, data)
+            home_setup.places(home, data)
+            text = (data / 'user-places.xbel').read_text()
+            self.assertIn(f'href="{(home / "desktop").as_uri()}"', text)
+            self.assertIn('<title>desktop</title>', text)
+            self.assertEqual(text.count(f'href="{(home / "src").as_uri()}"'), 1)
+            self.assertIn('<bookmark href="trash:/">', text)
+            self.assertEqual(text.count('<IsHidden>true</IsHidden>'), 1)
+            self.assertIn('<isSystemItem>true</isSystemItem>', text)
+            self.assertTrue(text.startswith('<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE xbel>'))
+            self.assertTrue((data / 'user-places.xbel.before-system-setup').exists())
+
+    def test_capitalized_folder_is_merged_and_removed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            (home / 'Downloads').mkdir()
+            (home / 'downloads').mkdir()
+            (home / 'Downloads/new').write_text('n')
+            (home / 'downloads/old').write_text('o')
+            home_setup.folders(home, home / '.config')
+            self.assertFalse((home / 'Downloads').exists())
+            self.assertEqual((home / 'downloads/new').read_text(), 'n')
+            self.assertEqual((home / 'downloads/old').read_text(), 'o')
+
     def test_conflicts_fail_before_any_moves(self):
         with tempfile.TemporaryDirectory() as tmp:
             home = Path(tmp)
             for name in ('Desktop', 'Documents', 'documents'):
                 (home / name).mkdir()
-            with self.assertRaisesRegex(RuntimeError, 'merge them manually'):
+            (home / 'Documents/a').write_text('one')
+            (home / 'documents/a').write_text('two')
+            with self.assertRaisesRegex(RuntimeError, 'Cannot merge'):
                 home_setup.folders(home, home / '.config')
             self.assertTrue((home / 'Desktop').exists())
             self.assertFalse((home / 'desktop').exists())
